@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Features - Elaina{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>Features</h1>
+        <p>Discover all the powerful features Elaina has to offer</p>
+    </div>
+</section>
+
+<section class="features-detailed">
+    <div class="container">
+        <div class="features-list">
+            {% for feature in features %}
+                <div class="feature-detailed">
+                    <div class="feature-icon-large">{{ feature.icon }}</div>
+                    <div class="feature-content">
+                        <h3>{{ feature.name }}</h3>
+                        <p>{{ feature.description }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to enhance your server?</h2>
+            <p>Add Elaina to your Discord server today and unlock all features</p>
+            {% if not user %}
+                <a href="/auth/login" class="btn btn-large btn-primary">Get Started</a>
+            {% else %}
+                <a href="/dashboard" class="btn btn-large btn-primary">Go to Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

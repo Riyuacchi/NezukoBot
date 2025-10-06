@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Elaina - Advanced Discord Bot Dashboard">
+    <meta name="theme-color" content="#9B59B6">
+    <title>{% block title %}Elaina Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" class="logo">
+                    <span class="logo-text">Elaina</span>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/features" class="nav-link">Features</a>
+                {% if user %}
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                    <div class="user-menu">
+                        <button class="user-button">
+                            {% if user.avatar %}
+                                <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" alt="Avatar" class="user-avatar">
+                            {% else %}
+                                <div class="user-avatar-placeholder">{{ user.username[0] }}</div>
+                            {% endif %}
+                            <span>{{ user.username }}</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="/dashboard" class="dropdown-item">My Servers</a>
+                            <a href="/auth/logout" class="dropdown-item">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="/auth/login" class="btn btn-primary">Login with Discord</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Elaina</h3>
+                    <p>Advanced Discord Bot with powerful features</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links</h4>
+                    <a href="/">Home</a>
+                    <a href="/features">Features</a>
+                    <a href="/invite">Invite Bot</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="#">Documentation</a>
+                    <a href="#">Support Server</a>
+                    <a href="#">GitHub</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Elaina. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
