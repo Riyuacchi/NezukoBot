@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 async def get_bot_guilds():
     try:
-        from bot.client import ElainaBot
+        from bot.client import DiscordBot
         from main import bot
 
         if bot and bot.guilds:

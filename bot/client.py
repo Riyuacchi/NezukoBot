@@ -7,7 +7,7 @@ from database.connection import AsyncSessionLocal
 from bot.utils.database import ensure_guild
 
 
-class ElainaBot(commands.Bot):
+class DiscordBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
@@ -28,6 +28,7 @@ class ElainaBot(commands.Bot):
         self.color = config.EMBED_COLOR
         self.guild_prefix_cache: dict[int, str] = {}
         self._synced_once = False
+        self.bot_name = None
 
     async def get_prefix(self, message):
         if not message.guild:
@@ -80,6 +81,11 @@ class ElainaBot(commands.Bot):
             logger.error(f"Command sync failed: {e}")
 
     async def on_ready(self):
+        self.bot_name = self.user.name
+
+        from bot.utils import embeds
+        embeds.set_bot_instance(self)
+
         logger.success(f"Logged in as {self.user} (ID: {self.user.id})")
         logger.info(f"Connected to {len(self.guilds)} guilds")
 

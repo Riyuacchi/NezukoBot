@@ -10,9 +10,9 @@ OWNER_ID = int(os.getenv("OWNER_ID", 0))
 
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
-DB_USER = os.getenv("DB_USER", "elaina")
+DB_USER = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "").strip('"')
-DB_NAME = os.getenv("DB_NAME", "elaina_db")
+DB_NAME = os.getenv("DB_NAME", "discord_bot_db")
 
 LAVALINK_HOST = os.getenv("LAVALINK_HOST", "localhost")
 LAVALINK_PORT = int(os.getenv("LAVALINK_PORT", 2333))

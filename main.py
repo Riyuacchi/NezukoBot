@@ -3,10 +3,10 @@ import sys
 import threading
 from loguru import logger
 import config
-from bot.client import ElainaBot
+from bot.client import DiscordBot
 from database.connection import init_database
 
-bot = ElainaBot()
+bot = DiscordBot()
 
 def start_web_server():
     import uvicorn
@@ -21,7 +21,7 @@ async def start_bot():
         await bot.close()
 
 async def main():
-    logger.info("Starting Elaina Bot")
+    logger.info("Starting Discord Bot")
     await init_database()
     logger.info("Database initialized")
 

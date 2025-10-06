@@ -15,7 +15,7 @@ from loguru import logger
 
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="Elaina Dashboard", docs_url=None, redoc_url=None)
+app = FastAPI(title="Bot Dashboard", docs_url=None, redoc_url=None)
 
 app.add_middleware(SessionMiddleware, secret_key=config.SESSION_SECRET)
 setup_middlewares(app, config)

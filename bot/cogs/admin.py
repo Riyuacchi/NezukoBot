@@ -25,7 +25,7 @@ class Admin(commands.Cog):
         else:
             await ctx.send(embed=embed)
 
-    @commands.hybrid_group(name="setup", description="Configure Elaina")
+    @commands.hybrid_group(name="setup", description="Configure bot")
     @is_admin()
     async def setup(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
@@ -85,43 +85,39 @@ class Admin(commands.Cog):
 
         await self.send_embed(ctx, success_embed("General settings updated."), ephemeral=True)
 
-    @setup.command(name="welcome", description="Configure welcome message")
+    @setup.command(name="welcome", description="Configure welcome message automatically")
     @is_admin()
-    async def setup_welcome(self, ctx: commands.Context, enabled: bool, channel: Optional[discord.TextChannel] = None, message: Optional[str] = None):
-        if enabled and not channel:
-            await self.send_embed(ctx, error_embed("Select a channel to enable the welcome message."), ephemeral=True)
-            return
+    async def setup_welcome(self, ctx: commands.Context):
+        channel = await ctx.guild.create_text_channel("welcome", overwrites={
+            ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False, read_messages=True)
+        })
 
         async with AsyncSessionLocal() as session:
             guild_record, _ = await ensure_guild(session, ctx.guild)
-            guild_record.welcome_enabled = enabled
-            guild_record.welcome_channel_id = channel.id if channel else None
-            if message:
-                guild_record.welcome_message = message
+            guild_record.welcome_enabled = True
+            guild_record.welcome_channel_id = channel.id
+            guild_record.welcome_message = "Welcome {user} to {server}!"
             await session.commit()
 
-        status = "enabled" if enabled else "disabled"
-        await self.send_embed(ctx, success_embed(f"Welcome message {status}."), ephemeral=True)
+        await self.send_embed(ctx, success_embed(f"Welcome system configured. Channel: {channel.mention}"))
 
-    @setup.command(name="goodbye", description="Configure goodbye message")
+    @setup.command(name="goodbye", description="Configure goodbye message automatically")
     @is_admin()
-    async def setup_goodbye(self, ctx: commands.Context, enabled: bool, channel: Optional[discord.TextChannel] = None, message: Optional[str] = None):
-        if enabled and not channel:
-            await self.send_embed(ctx, error_embed("Select a channel to enable the goodbye message."), ephemeral=True)
-            return
+    async def setup_goodbye(self, ctx: commands.Context):
+        channel = await ctx.guild.create_text_channel("goodbye", overwrites={
+            ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False, read_messages=True)
+        })
 
         async with AsyncSessionLocal() as session:
             guild_record, _ = await ensure_guild(session, ctx.guild)
-            guild_record.goodbye_enabled = enabled
-            guild_record.goodbye_channel_id = channel.id if channel else None
-            if message:
-                guild_record.goodbye_message = message
+            guild_record.goodbye_enabled = True
+            guild_record.goodbye_channel_id = channel.id
+            guild_record.goodbye_message = "Goodbye {user}!"
             await session.commit()
 
-        status = "enabled" if enabled else "disabled"
-        await self.send_embed(ctx, success_embed(f"Goodbye message {status}."), ephemeral=True)
+        await self.send_embed(ctx, success_embed(f"Goodbye system configured. Channel: {channel.mention}"))
 
-    @setup.command(name="voice", description="Set up temporary voice channels")
+    @setup.command(name="voice", description="Set up temporary voice channels automatically")
     @is_admin()
     async def setup_voice(self, ctx: commands.Context):
         guild = ctx.guild
@@ -132,49 +128,22 @@ class Admin(commands.Cog):
         async with AsyncSessionLocal() as session:
             guild_record, _ = await ensure_guild(session, guild)
 
-            category = None
-            if guild_record.voice_channels_category_id:
-                existing = guild.get_channel(guild_record.voice_channels_category_id)
-                if isinstance(existing, discord.CategoryChannel):
-                    category = existing
-            if not category:
-                try:
-                    category = await guild.create_category("🎙️ Temporary Voice")
-                except discord.Forbidden:
-                    await self.send_embed(ctx, error_embed("Unable to create the category."), ephemeral=True)
-                    return
+            category = await guild.create_category("🎙️ Temporary Voice")
 
-            result = await session.execute(
-                select(VoiceChannel).where(
-                    VoiceChannel.guild_id == guild.id,
-                    VoiceChannel.owner_id == 0
-                )
-            )
-            lobby_record = result.scalar_one_or_none()
-            lobby_channel = guild.get_channel(lobby_record.channel_id) if lobby_record else None
-            if not lobby_channel:
-                overwrites = {guild.default_role: discord.PermissionOverwrite(connect=True)}
-                try:
-                    lobby_channel = await guild.create_voice_channel("➕ Create a channel", category=category, overwrites=overwrites)
-                except discord.Forbidden:
-                    await self.send_embed(ctx, error_embed("Unable to create the voice channel."), ephemeral=True)
-                    return
-                if lobby_record:
-                    lobby_record.channel_id = lobby_channel.id
-                    lobby_record.name = lobby_channel.name
-                else:
-                    session.add(VoiceChannel(guild_id=guild.id, channel_id=lobby_channel.id, owner_id=0, name=lobby_channel.name))
+            overwrites = {guild.default_role: discord.PermissionOverwrite(connect=True)}
+            lobby_channel = await guild.create_voice_channel("➕ Create a channel", category=category, overwrites=overwrites)
+
+            session.add(VoiceChannel(guild_id=guild.id, channel_id=lobby_channel.id, owner_id=0, name=lobby_channel.name))
 
             guild_record.voice_channels_enabled = True
             guild_record.voice_channels_category_id = category.id
-            if not guild_record.voice_channels_template:
-                guild_record.voice_channels_template = "Voice room - {username}"
+            guild_record.voice_channels_template = "Voice room - {username}"
             await session.commit()
 
-        embed = success_embed("Temporary voice channels configured.")
+        embed = success_embed("Temporary voice channels configured automatically.")
         embed.add_field(name="Category", value=category.mention, inline=True)
         embed.add_field(name="Lobby channel", value=lobby_channel.mention, inline=True)
-        await self.send_embed(ctx, embed, ephemeral=True)
+        await self.send_embed(ctx, embed)
 
     @setup.command(name="voice_disable", description="Disable temporary voice channels")
     @is_admin()
@@ -213,34 +182,27 @@ class Admin(commands.Cog):
         status = "enabled" if enabled else "disabled"
         await self.send_embed(ctx, success_embed(f"Auto moderation {status}."))
 
-    @commands.hybrid_command(name="ticket", description="Manage the ticket system")
+    @setup.command(name="tickets", description="Set up ticket system automatically")
     @is_admin()
-    async def ticket(self, ctx: commands.Context, action: str, channel: Optional[discord.TextChannel] = None):
+    async def setup_tickets(self, ctx: commands.Context):
+        category = await ctx.guild.create_category("📩 Tickets")
+        log_channel = await ctx.guild.create_text_channel("ticket-logs", category=category, overwrites={
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False)
+        })
+
         async with AsyncSessionLocal() as session:
             guild_record, _ = await ensure_guild(session, ctx.guild)
-            if action == "enable":
-                if not channel:
-                    await self.send_embed(ctx, error_embed("Select a log channel."), ephemeral=True)
-                    return
-                guild_record.tickets_enabled = True
-                guild_record.tickets_log_channel_id = channel.id
-                await session.commit()
-                await self.send_embed(ctx, success_embed(f"Ticket system enabled. Logging to {channel.mention}."))
-                return
-            if action == "disable":
-                guild_record.tickets_enabled = False
-                guild_record.tickets_log_channel_id = None
-                await session.commit()
-                await self.send_embed(ctx, success_embed("Ticket system disabled."))
-                return
-            if action == "category":
-                if not channel or not channel.category:
-                    await self.send_embed(ctx, error_embed("Provide a channel from the desired category."), ephemeral=True)
-                    return
-                guild_record.tickets_category_id = channel.category_id
-                await session.commit()
-                await self.send_embed(ctx, success_embed("Ticket category updated."))
-                return
+            guild_record.tickets_enabled = True
+            guild_record.tickets_category_id = category.id
+            guild_record.tickets_log_channel_id = log_channel.id
+            await session.commit()
+
+        await self.send_embed(ctx, success_embed(f"Ticket system configured. Category: {category.mention}, Logs: {log_channel.mention}"))
+
+    @commands.hybrid_command(name="ticket", description="Manage tickets")
+    @is_admin()
+    async def ticket(self, ctx: commands.Context, action: str):
+        async with AsyncSessionLocal() as session:
             if action == "close":
                 if not isinstance(ctx.channel, discord.TextChannel):
                     return
@@ -342,38 +304,31 @@ class Admin(commands.Cog):
                 return
             await self.send_embed(ctx, error_embed("Unknown action."), ephemeral=True)
 
-    @commands.hybrid_command(name="logs", description="Configure logging")
+    @setup.command(name="logs", description="Configure logging automatically")
     @is_admin()
-    async def logs(self, ctx: commands.Context, action: str, channel: Optional[discord.TextChannel] = None):
+    async def setup_logs(self, ctx: commands.Context):
+        channel = await ctx.guild.create_text_channel("bot-logs", overwrites={
+            ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False, read_messages=False)
+        })
+
         async with AsyncSessionLocal() as session:
             guild_record, _ = await ensure_guild(session, ctx.guild)
-            if action == "enable":
-                if not channel:
-                    await self.send_embed(ctx, error_embed("Select a channel."), ephemeral=True)
-                    return
-                guild_record.log_channel_id = channel.id
-                guild_record.log_events = {
-                    "message_delete": True,
-                    "message_edit": True,
-                    "member_join": True,
-                    "member_leave": True,
-                    "member_ban": True,
-                    "member_unban": True,
-                    "channel_create": True,
-                    "channel_delete": True,
-                    "role_create": True,
-                    "role_delete": True
-                }
-                await session.commit()
-                await self.send_embed(ctx, success_embed(f"Logging enabled in {channel.mention}."))
-                return
-            if action == "disable":
-                guild_record.log_channel_id = None
-                guild_record.log_events = None
-                await session.commit()
-                await self.send_embed(ctx, success_embed("Logging disabled."))
-                return
-            await self.send_embed(ctx, error_embed("Unknown action."), ephemeral=True)
+            guild_record.log_channel_id = channel.id
+            guild_record.log_events = {
+                "message_delete": True,
+                "message_edit": True,
+                "member_join": True,
+                "member_leave": True,
+                "member_ban": True,
+                "member_unban": True,
+                "channel_create": True,
+                "channel_delete": True,
+                "role_create": True,
+                "role_delete": True
+            }
+            await session.commit()
+
+        await self.send_embed(ctx, success_embed(f"Logging enabled in {channel.mention}."))
 
 
 async def setup(bot):
