@@ -1,9 +1,10 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from loguru import logger
+from urllib.parse import quote_plus
 import config
 
-DATABASE_URL = f"mysql+aiomysql://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
+DATABASE_URL = f"mysql+aiomysql://{quote_plus(config.DB_USER)}:{quote_plus(config.DB_PASSWORD)}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
 
 engine = create_async_engine(
     DATABASE_URL,
