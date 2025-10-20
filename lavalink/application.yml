@@ -1,0 +1,121 @@
+server:
+  port: 10000
+  address: 0.0.0.0
+
+lavalink:
+  server:
+    password: "fq3FWOZld1OHJ77pgdtS4iJzEmeZval0p8aegMWeQO0"
+    sources:
+      youtube: true
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      http: true
+      local: false
+    filters:
+      volume: true
+      equalizer: true
+      karaoke: true
+      timescale: true
+      tremolo: true
+      vibrato: true
+      distortion: true
+      rotation: true
+      channelMix: true
+      lowPass: true
+    bufferDurationMs: 400
+    frameBufferDurationMs: 5000
+    opusEncodingQuality: 10
+    resamplingQuality: LOW
+    trackStuckThresholdMs: 10000
+    useSeekGhosting: true
+    youtubePlaylistLoadLimit: 6
+    playerUpdateInterval: 5
+    youtubeSearchEnabled: true
+    soundcloudSearchEnabled: true
+    gc-warnings: true
+    ratelimit:
+      ipBlocks: ["1.0.0.0/8", "127.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "10.0.0.0/8", "100.64.0.0/10", "169.254.0.0/16", "224.0.0.0/4", "240.0.0.0/4"]
+      excludedIps: []
+      strategy: "RotateOnBan"
+      searchTriggersFail: true
+      retryLimit: -1
+    youtubeConfig:
+      email: ""
+      password: ""
+
+metrics:
+  prometheus:
+    enabled: false
+    endpoint: /metrics
+
+sentry:
+  dsn: ""
+  environment: ""
+
+logging:
+  file:
+    path: ./logs/
+  level:
+    root: INFO
+    lavalink: INFO
+
+  logback:
+    rollingpolicy:
+      max-file-size: 1GB
+      max-history: 30
+
+plugins:
+  - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.0.1"
+    repository: "https://maven.lavalink.dev/releases"
+  - dependency: "com.github.topi314.lavasearch:lavasearch-plugin:1.0.0"
+    repository: "https://maven.lavalink.dev/releases"
+  - dependency: "com.github.topi314.sponsorblock:sponsorblock-plugin:3.0.0"
+    repository: "https://maven.lavalink.dev/releases"
+  - dependency: "me.duncte123:skybot-lavalink-plugin:1.7.0"
+    repository: "https://m2.duncte123.dev/releases"
+
+lavasrc:
+  providers:
+    - "ytsearch:\"%ISRC%\""
+    - "ytsearch:%QUERY%"
+  sources:
+    spotify: true
+    applemusic: true
+    deezer: true
+    yandexmusic: false
+    youtube: true
+  spotify:
+    clientId: "${SPOTIFY_CLIENT_ID}"
+    clientSecret: "${SPOTIFY_CLIENT_SECRET}"
+    countryCode: "US"
+    playlistLoadLimit: 6
+    albumLoadLimit: 6
+  applemusic:
+    countryCode: "US"
+    mediaAPIToken: ""
+    playlistLoadLimit: 6
+    albumLoadLimit: 6
+  deezer:
+    masterDecryptionKey: ""
+
+lavasearch:
+  sources:
+    youtube: true
+    soundcloud: true
+    spotify: true
+    applemusic: true
+    deezer: true
+
+sponsorblock:
+  enabled: true
+  categories:
+    - sponsor
+    - selfpromo
+    - interaction
+    - intro
+    - outro
+    - preview
+    - music_offtopic
+    - filler
