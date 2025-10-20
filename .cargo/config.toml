@@ -1,0 +1,7 @@
+# Cargo configuration file
+
+# Build with voice support by default on Windows
+[target.'cfg(windows)']
+
+# No voice support on Linux (avoids CMake/Opus build issues in Docker)
+[target.'cfg(target_os = "linux")']
